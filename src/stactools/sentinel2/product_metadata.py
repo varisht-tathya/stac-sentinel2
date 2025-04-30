@@ -166,7 +166,7 @@ class ProductMetadata:
     def image_paths(self) -> list[str]:
         extension = ".tif" if self.image_media_type == pystac.MediaType.COG else ".jp2"
 
-        return [f"{x.text}{extension}" for x in self.granule_node.findall("IMAGE_FILE")]
+        return [f"IMG_DATA/{x.text.split('IMG_DATA/')[1]}{extension}" for x in self.granule_node.findall("IMAGE_FILE")]
 
     @property
     def relative_orbit(self) -> Optional[int]:

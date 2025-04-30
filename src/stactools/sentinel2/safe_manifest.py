@@ -19,6 +19,14 @@ class SafeManifest:
         self.granule_href = granule_href
         self.href = os.path.join(granule_href, "manifest.safe")
 
+        if not os.path.isdir(self.granule_href):
+            self.href = self.granule_href
+            self.granule_href = os.path.dirname(self.granule_href)
+        else:
+            self.granule_href = granule_href
+            self.href = os.path.join(granule_href, "manifest.safe")
+
+
         root = XmlElement.from_file(self.href, read_href_modifier)
         self._data_object_section = root.find("dataObjectSection")
         if self._data_object_section is None:
@@ -66,13 +74,17 @@ class SafeManifest:
 
     @property
     def granule_metadata_href(self) -> Optional[str]:
-        return self._find_href(
-            [
-                'dataObject[@ID="S2_Level-2A_Tile1_Data"]/byteStream/fileLocation',
-                'dataObject[@ID="S2_Level-1C_Tile1_Metadata"]/byteStream/fileLocation',
-                'dataObject[@ID="S2_Level-2A_Tile1_Metadata"]/byteStream/fileLocation',
-            ]
-        )
+        granule_metadata = os.path.join(self.granule_href, 'MTD_TL.xml')
+        if os.path.exists(granule_metadata):
+            return granule_metadata
+        else:
+            return self._find_href(
+                [
+                    'dataObject[@ID="S2_Level-2A_Tile1_Data"]/byteStream/fileLocation',
+                    'dataObject[@ID="S2_Level-1C_Tile1_Metadata"]/byteStream/fileLocation',
+                    'dataObject[@ID="S2_Level-2A_Tile1_Metadata"]/byteStream/fileLocation',
+                ]
+            )
 
     def create_asset(self) -> tuple[str, pystac.Asset]:
         asset = pystac.Asset(
