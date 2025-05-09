@@ -132,7 +132,13 @@ class ProductMetadata:
         dt = datastrip_id[-2].lstrip("S")
         processing_level = datastrip_id[3]
 
-        return f"{sensor_id}_T{tile_id}_{dt}_{processing_level}"
+        # Alternate
+        # granule tile id: S2B_OPER_MSI_L1C_TL_2BPS_20250404T055256_A042186_T48RYN_N05.11
+        granule_tile_id = self.metadata_dict['s2:tile_id'].split("_")
+        orbit_number = granule_tile_id[-3]
+        return f"{processing_level}_T{tile_id}_{orbit_number}_{dt}"
+
+        # return f"{sensor_id}_T{tile_id}_{dt}_{processing_level}"
 
     @property
     def product_id(self) -> str:
