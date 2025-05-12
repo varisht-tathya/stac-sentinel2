@@ -243,18 +243,20 @@ def create_item(
 
     # --Assets--
 
+    asset_path = granule_href if os.path.isdir(granule_href) else os.path.dirname(granule_href)
+
     image_assets = dict(
         [
             image_asset_from_href(
                 item=item,
-                asset_href=os.path.join(asset_href_prefix or granule_href, image_path),
+                asset_href=os.path.join(asset_href_prefix or asset_path, image_path),
                 resolution_to_shape=metadata.resolution_to_shape,
                 proj_bbox=metadata.proj_bbox,
                 media_type=metadata.image_media_type,
                 processing_baseline=metadata.processing_baseline,
                 boa_add_offsets=metadata.boa_add_offsets,
             )
-            for image_path in metadata.image_paths
+            for image_path in metadata.image_paths  if os.path.exists(os.path.join(asset_href_prefix or asset_path, image_path))
         ]
     )
 
@@ -548,31 +550,31 @@ def metadata_from_safe_manifest(
             safe_manifest.create_asset(),
             product_metadata.create_asset(),
             granule_metadata.create_asset(),
-            (
-                INSPIRE_METADATA_ASSET_KEY,
-                pystac.Asset(
-                    href=safe_manifest.inspire_metadata_href,
-                    media_type=pystac.MediaType.XML,
-                    roles=["metadata"],
-                ),
-            ),
-            (
-                DATASTRIP_METADATA_ASSET_KEY,
-                pystac.Asset(
-                    href=safe_manifest.datastrip_metadata_href,
-                    media_type=pystac.MediaType.XML,
-                    roles=["metadata"],
-                ),
-            ),
+            # (
+            #     INSPIRE_METADATA_ASSET_KEY,
+            #     pystac.Asset(
+            #         href=safe_manifest.inspire_metadata_href,
+            #         media_type=pystac.MediaType.XML,
+            #         roles=["metadata"],
+            #     ),
+            # ),
+            # (
+            #     DATASTRIP_METADATA_ASSET_KEY,
+            #     pystac.Asset(
+            #         href=safe_manifest.datastrip_metadata_href,
+            #         media_type=pystac.MediaType.XML,
+            #         roles=["metadata"],
+            #     ),
+            # ),
         ]
     )
 
-    if granule_metadata.pvi_filename is not None:
-        extra_assets["preview"] = pystac.Asset(
-            href=os.path.join(granule_href, granule_metadata.pvi_filename),
-            media_type=product_metadata.image_media_type,
-            roles=["overview"],
-        )
+    # if granule_metadata.pvi_filename is not None:
+    #     extra_assets["preview"] = pystac.Asset(
+    #         href=os.path.join(granule_href, granule_metadata.pvi_filename),
+    #         media_type=product_metadata.image_media_type,
+    #         roles=["overview"],
+    #     )
 
     return Metadata(
         scene_id=product_metadata.scene_id,
